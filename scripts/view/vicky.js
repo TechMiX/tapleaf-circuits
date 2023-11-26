@@ -2,16 +2,16 @@ async function handleBrokenPromise(tapleafGate) {
     var selected_script = tapleafGate.script();
     var target = tapscript.Tap.encodeScript(selected_script);
     var pubkey = "ab".repeat(32);
-    var [tpubkey, cblock] = tapscript.Tap.getPubKey(pubkey, { challenge_scripts, target });
+    var [tpubkey, cblock] = tapscript.Tap.getPubKey(pubkey, { tree: challenge_scripts, target });
 
     //the order they should go in is: output first, so it can be moved to the altstack;
     //then input 1, as it is processed first; then input 2, as it is processed next. And so on.
     var preimages = [];
+    tapleafGate.inputs.reverse().forEach((input) => {
+        preimages.push(input.preimage);
+    });
     tapleafGate.outputs.forEach((output) => {
         preimages.push(output.preimage);
-    });
-    tapleafGate.inputs.forEach((input) => {
-        preimages.push(input.preimage);
     });
     var destino = $('.vickys_bitcoin_address').value;
     if (!destino) destino = prompt(`Paul broke his promise so you can take his money. Please enter a bitcoin address where you want it to go`);
@@ -347,8 +347,6 @@ function modalVanish() {
 }
 
 function initVicky() {
-    var privkey = getRand(32);
-    var pubkey = nobleSecp256k1.getPublicKey(privkey, true).substring(2);
     window.vickys_key = pubkey;
     $('.vicky_key').innerText = pubkey;
 }
