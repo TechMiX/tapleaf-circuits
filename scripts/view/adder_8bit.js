@@ -4,7 +4,7 @@ programs["adder_8bit"] = {
     },
     promise_prompt: (outputs, promise) => {
         var prompt = ``;
-        prompt += `They promise to send you two numbers which add up to ${parseInt(outputs[1], 2)}. `;
+        prompt += `They promise to send you two numbers which add up to ${parseInt(outputs[0] + outputs[1], 2)}. `;
         prompt += `They'll put up a bond to show they mean it, and if they break their promise, `;
         prompt += `you can prove they lied and take their money.`;
         return prompt;
@@ -13,11 +13,12 @@ programs["adder_8bit"] = {
         var prompt = ``;
         prompt += `The prover kept his promise. `;
 
-        prompt += `He promised to give you two numbers that add up to ${parseInt(outputs[1], 2)}. `;
+        var final_number_binary = outputs[0] + outputs[1];
+        prompt += `He promised to give you two numbers that add up to ${parseInt(final_number_binary, 2)}. `;
 
         prompt += `The first number he gave you is ${parseInt(inputs[1], 2)} and the second is ${parseInt(inputs[2], 2)}.\n\n`
-        prompt += `Bitvm checked whether they add up to ${parseInt(outputs[1], 2)} `;
-        prompt += `and it determined the equation is: true`;
+        prompt += `Bitvm checked whether they add up to ${parseInt(final_number_binary, 2)} `;
+        prompt += `and it determined the equation is: ${parseInt(final_number_binary, 2) == parseInt(inputs[1], 2) + parseInt(inputs[2], 2)}`;
         prompt += ` -- just as the prover promised. `;
 
         prompt += `Meaning not only do *you* know the prover kept his promise, your bitcoin transaction knows it too. `;
@@ -41,10 +42,10 @@ if ($('.adder_8bit_program')) {
         vickys_key = $('.adder_8bit_program .vickys_key').value;
     }
     $('.submit_sum_num_8bit').onclick = () => {
-        var final_carry = Number($('.final_carry').value);
         promise = Number($('.sum_num_8bit').value);
+        var carry_out = promise > 255 ? "1" : "0";
         var binary = promise.toString(2).padStart(8, "0");
-        binary = final_carry + binary;
+        binary = carry_out + binary.slice(binary.length - 8, binary.length);
         bin_array = binary.split("")
         bin_array.forEach((item, index) => bin_array[index] = Number(item));
         var output_preimages = [];
@@ -268,7 +269,7 @@ if ($('.adder_8bit_program')) {
         $('.adder_8bit_step_six').classList.remove("hidden");
     }
     $('.adder_8bit_step_six_done').onclick = async () => {
-        var prev_carry = Number($('.adder_8bit_prev_carry').value);
+        var carry_in = 0;
         var num1 = Number($('.adder_8bit_num_1').value);
         var binary = num1.toString(2).padStart(8, "0");
         bin_array_1 = binary.split("")
@@ -280,8 +281,8 @@ if ($('.adder_8bit_program')) {
         console.log("num1:", bin_array_1.join(""), "num2:", bin_array_2.join(""));
         initial_commitment_preimages.forEach((preimage_pair, index) => {
             if (index == 0) {
-                circuit.wires[index].setting = prev_carry;
-                preimages_to_reveal.push(preimage_pair[prev_carry]);
+                circuit.wires[index].setting = carry_in;
+                preimages_to_reveal.push(preimage_pair[carry_in]);
             } else if (index < 8 + 1) {
                 circuit.wires[index].setting = bin_array_1[index - 1];
                 preimages_to_reveal.push(preimage_pair[bin_array_1[index - 1]]);
@@ -316,8 +317,6 @@ if ($('.adder_8bit_program')) {
     }
     $('.adder_8bit_program .vickys_key').value = "";
     $('.adder_8bit_program .sum_num_8bit').value = "";
-    $('.adder_8bit_program .final_carry').value = "";
-    $('.adder_8bit_program .adder_8bit_prev_carry').value = "";
     $('.adder_8bit_program .adder_8bit_num_1').value = "";
     $('.adder_8bit_program .adder_8bit_num_2').value = "";
 }
