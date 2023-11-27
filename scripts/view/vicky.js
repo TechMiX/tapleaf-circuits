@@ -89,7 +89,8 @@ async function handleResult(json) {
 
     // Note: since we don't do bisection yet, we only check for the output gates
     var output_tapleaf_gates = [];
-    var minimum_output_wire_number = circuit.wires.length - circuit.output_sizes[0];
+    var sum_of_all_output_sizes = circuit.output_sizes.reduce((ac, c) => ac + c, 0);
+    var minimum_output_wire_number = circuit.wires.length - sum_of_all_output_sizes;
     var i; for (i = 0; i < tapleaf_gates.length; i++) {
         if (tapleaf_gates[i].gate.output_wires.reduce((ac, c) => ac || c >= minimum_output_wire_number, false)) {
             output_tapleaf_gates.push(tapleaf_gates[i]);
